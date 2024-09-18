@@ -133,7 +133,7 @@ def build_paths(choice, cell0, walls):
 
 
 # generates a corridor until a dead end forms
-# or the maximum corridor length(MAX_L) is reached if you uncomment the 156. line
+# or the maximum corridor length(MAX_L) is reached if you uncomment the 163. line
 def generate_corridor(cell0, grids, walls, path, color):
     global PATH
     n = 0
