@@ -47,9 +47,6 @@ ROW = int(WIDTH/gridL - 2)
 COL = int(HEIGHT/gridL - 2)
 
 
-xw = True
-yw = True
-
 
 class Wall:
     def __init__(self, cords, erected, rect):
@@ -58,7 +55,7 @@ class Wall:
         self.rect = rect
 
 
-class Grid:
+class Cell:
 
     def __init__(self, val, cords, rect, visited, color, neighbors):
         self.val = val
@@ -77,28 +74,28 @@ class Cords:
 
 # checks if there is any possible not visited grid from the chosen grid0 and returning them, if there are any
 # (the visited grids are marked to not cause any looping pathways inside the maze)
-def check_moves(grid0, grids):
+def check_moves(cell0, grids):
     gs = []
-    if grid0.val <= (ROW*COL) - ROW:
-        down = grids[int(grid0.val + ROW - 1)]
+    if cell0.val <= (ROW*COL) - ROW:
+        down = grids[int(cell0.val + ROW - 1)]
         if not down.visited:
             gs.append(down)
 
-    if grid0.val >= 1 + ROW:
+    if cell0.val >= 1 + ROW:
         # print(grid0.cords.row-2)
-        up = grids[int(grid0.val - ROW - 1)]
+        up = grids[int(cell0.val - ROW - 1)]
         # print("up: " + str(up.val))
         if not up.visited:
             gs.append(up)
 
-    if grid0.cords.col < ROW:
-        right = grids[int(grid0.val)]
+    if cell0.cords.col < ROW:
+        right = grids[int(cell0.val)]
 
         if not right.visited:
             gs.append(right)
 
-    if grid0.cords.col > 1:
-        left = grids[int(grid0.val - 2)]
+    if cell0.cords.col > 1:
+        left = grids[int(cell0.val - 2)]
 
         if not left.visited:
             gs.append(left)
@@ -108,29 +105,29 @@ def check_moves(grid0, grids):
 
 # removes the walls between two grids
 # (by the algorithm all walls are erected at first)
-def build_paths(choice, grid0, walls):
+def build_paths(choice, cell0, walls):
     global PATH
     new_p = 0
-    grid0.neighbors.append(choice)
+    cell0.neighbors.append(choice)
 
-    if grid0.cords.row == choice.cords.row:
-        if grid0.val < choice.val:
+    if cell0.cords.row == choice.cords.row:
+        if cell0.val < choice.val:
             new_p = walls[1][int(choice.val + (choice.cords.row - 1) - 1)]
 
         else:
-            new_p = walls[1][int(grid0.val + (grid0.cords.row - 1) - 1)]
+            new_p = walls[1][int(cell0.val + (cell0.cords.row - 1) - 1)]
     else:
-        if grid0.val > choice.val:
+        if cell0.val > choice.val:
             new_p = walls[0][int(choice.val) - 1 + ROW]
         else:
-            new_p = walls[0][int(grid0.val) - 1 + ROW]
+            new_p = walls[0][int(cell0.val) - 1 + ROW]
 
     new_p.erected = False
 
 
 # generates a corridor until a dead end forms
-# or the maximum corridor length(MAX_L) is reached if you uncomment the 159. line
-def generate_corridor(grid0, grids, walls, path, color):
+# or the maximum corridor length(MAX_L) is reached if you uncomment the 156. line
+def generate_corridor(cell0, grids, walls, path, color):
     global PATH
     n = 0
     p = []
@@ -138,20 +135,20 @@ def generate_corridor(grid0, grids, walls, path, color):
 
         p = path
         gs = []
-        grid0.visited = True
-        PATH.append(grid0)
+        cell0.visited = True
+        PATH.append(cell0)
         if n >= MAX_L:
             break
         # print(f"grid {grid0.val} is visited")
 
-        gs = check_moves(grid0, grids)
+        gs = check_moves(cell0, grids)
 
         if len(gs) != 0:
             choice = rd.choice(gs)
-            build_paths(choice, grid0, walls)
-            grid0 = choice
-            p.append((grid0.cords.row, grid0.cords.col))
-            grid0.color = color
+            build_paths(choice, cell0, walls)
+            cell0 = choice
+            p.append((cell0.cords.row, cell0.cords.col))
+            cell0.color = color
 
         else:
             break
@@ -191,14 +188,14 @@ def draw_window(p1, keys_pressed, grids, walls, WIN):
 
 # generates according do Depth First Search
 # (after reaching a dead end, backtracks along the current corridor until an unvisited grid is found)
-def DFS(colors, grids, walls, grid0, path):
+def DFS(colors, grids, walls, cell0, path):
     nc = 0
     complete = False
     while not complete:
 
         color = colors[nc]
         nc = (nc + 1) % len(colors)
-        path = generate_corridor(grid0, grids, walls, path, color)
+        path = generate_corridor(cell0, grids, walls, path, color)
         print("new path: ", path)
 
         complete = True
@@ -208,14 +205,14 @@ def DFS(colors, grids, walls, grid0, path):
             if len(check_moves(g, grids)) != 0:
                 path = []
                 print("found unvisited path: " + "(" + str(g.cords.row) + ", " + str(g.cords.col) + ")")
-                grid0 = g
+                cell0 = g
                 complete = False
                 break
 
 
 # generates according to Hunt-and-Kill algorithm
 # (after reaching a dead end, starts scanning from the first grids(top left) until it finds an unvisited grid)
-def Hunt_and_Kill(colors, grids, walls, grid0, path):
+def Hunt_and_Kill(colors, grids, walls, cell0, path):
     global PATHS
     p = []
     nc = 0
@@ -224,7 +221,7 @@ def Hunt_and_Kill(colors, grids, walls, grid0, path):
 
         color = colors[nc]
         nc = (nc + 1) % len(colors)
-        path = generate_corridor(grid0, grids, walls, path, color)
+        path = generate_corridor(cell0, grids, walls, path, color)
         print(path)
         PATHS.append(path)
         complete = True
@@ -237,9 +234,9 @@ def Hunt_and_Kill(colors, grids, walls, grid0, path):
                 next_grid = grids[int(g.val-2)]
                 print(f"found unvisited grid: ({g.cords.row}, {g.cords.col}), next path begins: ({next_grid.cords.row}, {next_grid.cords.col})")
                 if next_grid.cords.row == g.cords.row:
-                    grid0 = next_grid
+                    cell0 = next_grid
                 else:
-                    grid0 = grids[int(g.val-1-ROW)]
+                    cell0 = grids[int(g.val - 1 - ROW)]
                 break
 
 
@@ -248,16 +245,16 @@ def generate_seed():
 
 
 # follows all possible paths recursively and stops if the exit grid(bottom right) is reached
-def solve(grid0, grids):
-    if grid0.val == ROW*COL:
+def solve(cell0, grids):
+    if cell0.val == ROW*COL:
 
-        return str(grid0.val) + ""
+        return str(cell0.val) + ""
     else:
-        if len(grid0.neighbors) == 0:
+        if len(cell0.neighbors) == 0:
             # print(f"grid at {grid0.cords.row}, {grid0.cords.col} is a dead end")
             return ""
         result = ""
-        for g in grid0.neighbors:
+        for g in cell0.neighbors:
             result += ", " + solve(g, grids)
         st = ""
         for s in result.split(", "):
@@ -265,7 +262,7 @@ def solve(grid0, grids):
         if st == "":
             return ""
         else:
-            return str(grid0.val) + result
+            return str(cell0.val) + result
 
 
 def main():
@@ -293,7 +290,7 @@ def main():
     for y in range(gridL, HEIGHT-2*gridL+1, gridL):
         for x in range(gridL, WIDTH-2*gridL+1, gridL):
             gridr = pygame.Rect(x+1, y+1, gridL-2, gridL-2)
-            grid = Grid(((y / gridL)-1) * ROW + x / gridL, Cords(y / gridL, x / gridL), gridr, False, WHITE, [])
+            grid = Cell(((y / gridL)-1) * ROW + x / gridL, Cords(y / gridL, x / gridL), gridr, False, WHITE, [])
             grids.append(grid)
 
     # walls on y-axis
@@ -313,22 +310,22 @@ def main():
     walls.append(walls_x)
     walls.append(walls_y)
 
-    grid0 = grids[0]
+    cell0 = grids[0]
     path = [(1.0, 1.0)]
-    grid0.color = GREEN
+    cell0.color = GREEN
     colors = (GREEN, YELLOW, MAGENTA, ORANGE, BLUE)
 
     if inp == 1:
-        DFS(colors, grids, walls, grid0, path)
+        DFS(colors, grids, walls, cell0, path)
     else:
-        Hunt_and_Kill(colors, grids, walls, grid0, path)
+        Hunt_and_Kill(colors, grids, walls, cell0, path)
 
     solution_grids = solve(grids[0], grids).split(", ")
-    for grid in solution_grids:
-        if grid != "":
-            solution_path.append(grids[int(float(grid))-1])
-    print("\nPress p for solution")
-    print("\nPress x for branch view\n(shows you how the corridors formed)")
+    for cell in solution_grids:
+        if cell != "":
+            solution_path.append(grids[int(float(cell))-1])
+    print("\nHold p for solution")
+    print("\nHold x for branch view\n(shows you how the are corridors formed)")
     p1 = pygame.Rect(0, 0, pw, ph)
     walls[0][0].erected = walls[0][-1].erected = False
 
