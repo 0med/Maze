@@ -72,8 +72,8 @@ class Cords:
         self.col = col
 
 
-# checks if there is any possible not visited grid from the chosen grid0 and returning them, if there are any
-# (the visited grids are marked to not cause any looping pathways inside the maze)
+# checks if there is any possible not visited cell from the chosen cell0 and returning them, if there are any
+# (the visited cells are marked to not cause any looping pathways inside the maze)
 def check_moves(cell0, grids):
     gs = []
     if cell0.val <= (ROW*COL) - ROW:
@@ -103,7 +103,7 @@ def check_moves(cell0, grids):
     return gs
 
 
-# removes the walls between two grids
+# removes the walls between two cells
 # (by the algorithm all walls are erected at first)
 def build_paths(choice, cell0, walls):
     global PATH
@@ -187,7 +187,7 @@ def draw_window(p1, keys_pressed, grids, walls, WIN):
 
 
 # generates according do Depth First Search
-# (after reaching a dead end, backtracks along the current corridor until an unvisited grid is found)
+# (after reaching a dead end, backtracks along the current corridor until an unvisited cell is found)
 def DFS(colors, grids, walls, cell0, path):
     nc = 0
     complete = False
@@ -211,7 +211,7 @@ def DFS(colors, grids, walls, cell0, path):
 
 
 # generates according to Hunt-and-Kill algorithm
-# (after reaching a dead end, starts scanning from the first grids(top left) until it finds an unvisited grid)
+# (after reaching a dead end, starts scanning from the first grids(top left) until it finds an unvisited cell)
 def Hunt_and_Kill(colors, grids, walls, cell0, path):
     global PATHS
     p = []
@@ -244,7 +244,7 @@ def generate_seed():
     return rd.randint(1, 100000)
 
 
-# follows all possible paths recursively and stops if the exit grid(bottom right) is reached
+# follows all possible paths recursively and stops if the exit cell(bottom right) is reached
 def solve(cell0, grids):
     if cell0.val == ROW*COL:
 
