@@ -17,7 +17,11 @@ MAGENTA = (255, 0, 255)
 ORANGE = (255, 153, 51)
 GREY = (160, 160, 160)
 DG = (96, 96, 96)
+
+# Length of a square cell
 gridL = 30
+
+# Thickness of a wall
 gridT = 10
 SEED = 0
 solution_path = []
