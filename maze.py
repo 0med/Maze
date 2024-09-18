@@ -76,6 +76,9 @@ class Cords:
 # (the visited cells are marked to not cause any looping pathways inside the maze)
 def check_moves(cell0, grids):
     gs = []
+
+    # these check whether or not the input cell is right next to the border of the maze 
+    # (and if so, continues to check if the other neighbours of the cell are visited)
     if cell0.val <= (ROW*COL) - ROW:
         down = grids[int(cell0.val + ROW - 1)]
         if not down.visited:
